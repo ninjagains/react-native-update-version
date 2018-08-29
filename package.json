@@ -1,0 +1,16 @@
+{
+  "name": "react-native-update-version",
+  "version": "1.0.0",
+  "description": "A tool to help update version numbers in React Native applications",
+  "bin": {
+    "react-native-update-version": "./cli.js"
+  },
+  "author": "Hanse",
+  "license": "MIT",
+  "dependencies": {
+    "find": "^0.2.9",
+    "is-git-clean": "^1.1.0",
+    "meow": "^5.0.0",
+    "semver": "^5.5.1"
+  }
+}
