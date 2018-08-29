@@ -5,6 +5,10 @@
   "bin": {
     "react-native-update-version": "./cli.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ninjagains/react-native-update-version.git"
+  },
   "author": "Hanse",
   "license": "MIT",
   "dependencies": {
