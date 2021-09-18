@@ -18,18 +18,24 @@ Usage
   $ react-native-update-version <patch|minor|major>
 
 Options
+  --branch, git branch name
   --silent, do not show any output
 `,
   {
     flags: {
       silent: {
         type: 'boolean'
+      },
+      branch: {
+        type: 'string',
+        default: 'main'
       }
     }
   }
 );
 
 const semverLevel = cli.input[0] || 'patch';
+const branchName = cli.flags.branch;
 
 function log(...args) {
   if (cli.flags.silent) {
@@ -54,7 +60,7 @@ async function updateAndroidVersionName(nextVersion, buildNumber) {
 }
 
 async function countGitCommits() {
-  return parseInt((await exec('git rev-list master --count')).stdout);
+  return parseInt((await exec(`git rev-list ${branchName} --count`)).stdout);
 }
 
 function findPlistFiles() {
