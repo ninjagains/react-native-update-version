@@ -1,9 +1,9 @@
 {
   "name": "react-native-update-version",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A tool to help update version numbers in React Native applications",
   "bin": {
-    "react-native-update-version": "./cli.js"
+    "react-native-update-version": "cli.js"
   },
   "repository": {
     "type": "git",
