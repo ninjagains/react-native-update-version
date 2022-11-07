@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
-const { promisify } = require("util");
-const find = require("find");
-const path = require("path");
-const fs = require("fs");
-const semver = require("semver");
-const isGitClean = require("is-git-clean");
-const meow = require("meow");
+import * as path from 'node:path';
 
-const exec = promisify(require("child_process").exec);
-const writeFile = promisify(fs.writeFile);
-const readFile = promisify(fs.readFile);
+import find from 'find';
+import { promises as fs } from 'node:fs';
+import isGitClean from 'is-git-clean';
+import meow from 'meow';
+import { exec as nativeExec } from 'node:child_process';
+import { promisify } from 'node:util';
+import semver from 'semver';
+
+const exec = promisify(nativeExec);
 
 const cli = meow(
   `
@@ -22,19 +22,20 @@ Options
   --silent, do not show any output
 `,
   {
+    importMeta: import.meta,
     flags: {
       silent: {
-        type: "boolean",
+        type: 'boolean',
       },
       branch: {
-        type: "string",
-        default: "main",
+        type: 'string',
+        default: 'main',
       },
     },
   }
 );
 
-const semverLevel = cli.input[0] || "patch";
+const semverLevel = cli.input[0] || 'patch';
 const branchName = cli.flags.branch;
 
 function log(...args) {
@@ -46,14 +47,14 @@ function log(...args) {
 }
 
 async function updateAndroidVersionName(nextVersion, buildNumber) {
-  const filename = "android/app/build.gradle";
-  const content = await readFile(filename, "utf8");
+  const filename = 'android/app/build.gradle';
+  const content = await fs.readFile(filename, 'utf8');
   const newContent = content
     .replace(/(versionName) "([0-9].+)"/, `$1 "${nextVersion}"`)
     .replace(/(versionCode) ([0-9]+)/, `$1 ${buildNumber}`);
 
   try {
-    return await writeFile(filename, newContent);
+    return await fs.writeFile(filename, newContent);
   } catch (error) {
     throw new Error(`Set versionName ${nextVersion} in ${filename}`);
   }
@@ -67,9 +68,9 @@ function findPlistFiles() {
   return new Promise((resolve) => {
     find.file(
       /ios\/(\w+)\/Info.plist$/,
-      path.resolve(process.cwd(), "ios"),
+      path.resolve(process.cwd(), 'ios'),
       (files) => {
-        resolve(files.filter((file) => !file.includes("Tests/Info.plist")));
+        resolve(files.filter((file) => !file.includes('Tests/Info.plist')));
       }
     );
   });
@@ -84,12 +85,12 @@ async function main() {
 
   if (!isRepoClean) {
     console.error(
-      "This command requires a clean git repo. Please stash or commit any changes before re-running this command."
+      'This command requires a clean git repo. Please stash or commit any changes before re-running this command.'
     );
     return;
   }
 
-  const packageJson = JSON.parse(await readFile("package.json"));
+  const packageJson = JSON.parse(await fs.readFile('package.json'));
   const currentVersion = packageJson.version;
   const nextVersion = semver.inc(currentVersion, semverLevel);
   const buildNumber = await countGitCommits();
@@ -97,18 +98,21 @@ async function main() {
   for (const plistFile of await findPlistFiles()) {
     await updatePlistAtKey(
       plistFile,
-      "CFBundleShortVersionString",
+      'CFBundleShortVersionString',
       nextVersion
     );
-    await updatePlistAtKey(plistFile, "CFBundleVersion", buildNumber);
+    await updatePlistAtKey(plistFile, 'CFBundleVersion', buildNumber);
   }
 
   await updateAndroidVersionName(nextVersion, buildNumber);
 
   packageJson.version = nextVersion;
-  await writeFile("package.json", JSON.stringify(packageJson, null, 2) + "\n");
+  await fs.writeFile(
+    'package.json',
+    JSON.stringify(packageJson, null, 2) + '\n'
+  );
 
-  await exec("git add .");
+  await exec('git add .');
   await exec(`git commit -m ${nextVersion}`);
   await exec(`git tag -a '${nextVersion}' -m '${nextVersion}'`);
 
@@ -116,8 +120,8 @@ async function main() {
     `Version numbers successfully updated to ${nextVersion} (${buildNumber}).`
   );
   log();
-  log("ios: cd ios && bundle exec fastlane beta");
-  log("android: cd android && ./gradlew assembleRelease");
+  log('ios: cd ios && bundle exec fastlane beta');
+  log('android: cd android && ./gradlew assembleRelease');
   log();
 }
 
