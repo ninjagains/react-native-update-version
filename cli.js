@@ -119,10 +119,6 @@ async function main() {
   log(
     `Version numbers successfully updated to ${nextVersion} (${buildNumber}).`
   );
-  log();
-  log('ios: cd ios && bundle exec fastlane beta');
-  log('android: cd android && ./gradlew assembleRelease');
-  log();
 }
 
 main();
